@@ -1,0 +1,63 @@
+s <- read.csv("results/cell_summary.csv")
+d <- read.csv("data/fiji_results.csv", check.names = FALSE)
+
+student_id <- "202400730"
+big <- which.max(d$Area)
+
+readme <- c(
+  "# Cytoskeleton and Cell Morphology (BBBC018)",
+  "",
+  paste0("**Student ID:** ", student_id),
+  "",
+  paste0("**Chosen phenotype (my visual classification):** ", s$phenotype),
+  "",
+  paste0("**Actin image:** ", s$image_id, "-actin.DIB"),
+  "",
+  paste0("**DNA image:** ", s$image_id, "-DNA.DIB"),
+  "",
+  paste0("**Unique image-field ID:** ", s$image_id),
+  "",
+  "**Dataset download:** https://data.broadinstitute.org/bbbc/BBBC018/BBBC018_v1_images.zip",
+  "",
+  "We used image set BBBC018v1 from the Broad Bioimage Benchmark Collection (Ljosa et al., Nature Methods, 2012). The images are licensed CC BY-NC-SA 3.0.",
+  "",
+  "## Brief Fiji steps",
+  "",
+  paste0("I downloaded and unzipped BBBC018_v1_images.zip, then opened ", s$image_id,
+         "-actin.DIB and its matching ", s$image_id, "-DNA.DIB in Fiji. I used the DNA image to check that each outline held only one nucleus. In Analyze > Set Measurements I checked Area, Mean gray value, Shape descriptors, and Display label, and left Limit to threshold unchecked. I traced five isolated cells on the actin image with the Freehand Selection tool, added each one to ROI Manager, and measured them. I saved the Results table as data/fiji_results.csv and an annotated image of the outlines as figures/measured_cells.png. The original DIB images were not changed."),
+  "",
+  "![Measured cells](figures/measured_cells.png)",
+  "",
+  "## R analysis",
+  "",
+  sprintf("I ran scripts/analyze_cells.R on the Fiji results. Across the %d cells, the mean area was about %.0f pixels squared, the mean circularity was %.2f, the mean aspect ratio was %.2f, and the mean actin signal was about %.0f arbitrary units.",
+          s$cells_measured, s$mean_area_px2, s$mean_circularity,
+          s$mean_aspect_ratio, s$mean_actin_signal),
+  "",
+  "![Area vs circularity](figures/area_vs_circularity.png)",
+  "",
+  "![Actin intensity](figures/actin_intensity.png)",
+  "",
+  "## Answers",
+  "",
+  "**1. Which specific phenotype did you choose, and what visible features support that choice?**",
+  "",
+  paste0("I chose ", s$phenotype, ". Field ", s$image_id,
+         " has mostly isolated, rounded cells, and many of them have a bright actin rim and scalloped, bumpy edges, which looks like the Actin blebs example on the BBBC018 page. This is my own visual classification and not a verified label."),
+  "",
+  "**2. Were your five cells mostly round or elongated?**",
+  "",
+  sprintf("They were mostly round. Circularity ranged from %.2f to %.2f and aspect ratio ranged from %.2f to %.2f, so none of them were really elongated. Cell %d was the largest and least circular (%.0f pixels squared, circularity %.2f), which fits its bumpy edge.",
+          min(d[["Circ."]]), max(d[["Circ."]]), min(d$AR), max(d$AR),
+          big, d$Area[big], d[["Circ."]][big]),
+  "",
+  "**3. What role does actin play in maintaining cell shape and in cell movement (Karp Chapter 9)?**",
+  "",
+  "Actin filaments form a network under the plasma membrane (the cell cortex) that gives the cell its shape and mechanical support. In movement, actin polymerizes at the leading edge and pushes the membrane forward to form protrusions like lamellipodia and filopodia, and myosin helps with contraction.",
+  "",
+  "**4. Why can a single fixed fluorescence image NOT show how fast a cell moves?**",
+  "",
+  "A fixed image is only one snapshot at one moment, so it shows where the cell is and what shape it has, but not where it was before or after. Speed needs the cell's position at several time points, which we don't have here."
+)
+
+writeLines(readme, "README.md")
